@@ -1,3 +1,4 @@
+
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grid_query_frame",
         type=int,
-        default=0,
+        default=15,
         help="Compute dense and grid tracks starting from this frame ",
     )
 
@@ -61,16 +62,35 @@ if __name__ == "__main__":
     model = model.to(DEFAULT_DEVICE)
     video = video.to(DEFAULT_DEVICE)
 
+    #对视频分成多个小段，每个小段都进行预测
+    # pred_tracks = []
+    # pred_visibility = []
+    # for i in range(0,video.shape[2],10):
+    #     video_seg = video[:,:,i:i+10,:,:]
+    #     pred_tracks_seg, pred_visibility_seg = model(
+    #         video_seg,
+    #         grid_size=args.grid_size,
+    #         grid_query_frame=args.grid_query_frame,
+    #         backward_tracking=args.backward_tracking,
+    #         # segm_mask=segm_mask
+    #     )
+    #     print(f"computed{i}")
+    #     #分段可视化并保存
+    #     seq_name = args.video_path.split("/")[-1]
+    #     vis = Visualizer(save_dir="./saved_videos", pad_value=120, linewidth=3,mode='optical_flow')
+    #     vis.visualize(video_seg, pred_tracks_seg, pred_visibility_seg, query_frame=args.grid_query_frame,filename=f'water_flow_{i}.mp4')
+
     pred_tracks, pred_visibility = model(
         video,
         grid_size=args.grid_size,
         grid_query_frame=args.grid_query_frame,
         backward_tracking=args.backward_tracking,
-        # segm_mask=segm_mask
+        segm_mask=segm_mask
     )
     print("computed")
 
     # save a video with predicted tracks
     seq_name = args.video_path.split("/")[-1]
     vis = Visualizer(save_dir="./saved_videos", pad_value=120, linewidth=3)
-    vis.visualize(video, pred_tracks, pred_visibility, query_frame=args.grid_query_frame)
+    filename = f"water_{seq_name}"
+    vis.visualize(video, pred_tracks, pred_visibility, query_frame=args.grid_query_frame,filename=filename)
